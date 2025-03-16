@@ -127,7 +127,7 @@ async function runDemo() {
 
     // Test Case 2: Your personal project
     console.log('\n=== Analyzing Your Repository ===');
-    await analyzeGitHubRepository('saksham-jain177', 'automated-transcription-system');
+    await analyzeGitHubRepository('your-username', 'your-repo');
 
     // Test Case 3: Another popular project
     console.log('\n=== Analyzing VS Code Repository ===');
