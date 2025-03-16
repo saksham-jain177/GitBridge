@@ -12,8 +12,8 @@ const process = require('process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate limiter configuration
-const limiter = rateLimit({
+// Rate limiter configuration for general API endpoints
+const apiLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour window
     max: 5, // limit each IP to 5 requests per windowMs
     handler: function (req, res) {
@@ -26,8 +26,21 @@ const limiter = rateLimit({
     legacyHeaders: false
 });
 
-// Apply rate limiting to all routes
-app.use(limiter);
+// Separate rate limiter for AI analysis
+const aiLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    max: 10, // higher limit for AI endpoints
+    handler: function (req, res) {
+        res.status(429).json({
+            error: 'AI analysis rate limit exceeded. Please try again later.',
+            retryAfter: Math.ceil(this.windowMs / 1000 / 60)
+        });
+    }
+});
+
+// Apply rate limiting selectively
+app.use('/mcp', apiLimiter); // Apply to API endpoints
+app.use('/analyze-repo', aiLimiter); // Apply to AI analysis endpoint
 
 // Middleware
 app.use(cors());
