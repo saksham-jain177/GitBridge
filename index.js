@@ -14,11 +14,16 @@ const PORT = process.env.PORT || 3000;
 
 // Rate limiter configuration
 const limiter = rateLimit({
-  windowMs: 60 * 60 * 1000, // 1 hour window
-  max: 5, // limit each IP to 5 requests per windowMs
-  message: 'Rate limit exceeded. Please try again later.',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+    windowMs: 60 * 60 * 1000, // 1 hour window
+    max: 5, // limit each IP to 5 requests per windowMs
+    handler: function (req, res) {
+        res.status(429).json({
+            error: 'Rate limit exceeded. Please try again later.',
+            retryAfter: Math.ceil(this.windowMs / 1000 / 60) // minutes
+        });
+    },
+    standardHeaders: true,
+    legacyHeaders: false
 });
 
 // Apply rate limiting to all routes

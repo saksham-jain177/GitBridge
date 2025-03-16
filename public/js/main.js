@@ -42,12 +42,14 @@ async function analyzeWithAI() {
     try {
         // Rate limiting check
         if (!checkRateLimit()) {
-            throw new Error('Rate limit exceeded. Please try again later.');
+            resultDiv.textContent = 'Rate limit exceeded. Please try again later.';
+            return;
         }
 
         const [owner, repo] = repoPath.split('/');
         if (!owner || !repo) {
-            throw new Error('Invalid repository format. Use format: owner/repo');
+            resultDiv.textContent = 'Invalid repository format. Use format: owner/repo';
+            return;
         }
 
         const response = await fetch('/analyze-repo', {
@@ -55,18 +57,45 @@ async function analyzeWithAI() {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                owner: owner,
-                repo: repo,
-                prompt: prompt
-            })
+            body: JSON.stringify({ owner, repo, prompt })
         });
-        
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || response.statusText);
+        }
+
         const data = await response.json();
-        resultDiv.textContent = data.analysis;
-        
+        resultDiv.textContent = JSON.stringify(data, null, 2);
     } catch (error) {
-        resultDiv.textContent = 'Error: ' + error.message;
+        resultDiv.textContent = `Error: ${error.message}`;
+    }
+}
+
+async function testAPI() {
+    const resultDiv = document.getElementById('result');
+    const endpoint = document.getElementById('endpointInput').value;
+    
+    resultDiv.textContent = 'Testing API...';
+    
+    try {
+        // Rate limiting check
+        if (!checkRateLimit()) {
+            resultDiv.textContent = 'Rate limit exceeded. Please try again later.';
+            return;
+        }
+
+        const response = await fetch(endpoint);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || response.statusText);
+        }
+
+        const data = await response.json();
+        resultDiv.textContent = JSON.stringify(data, null, 2);
+    } catch (error) {
+        resultDiv.textContent = `Error: ${error.message}`;
     }
 }
 
