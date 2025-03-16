@@ -12,6 +12,9 @@ const process = require('process');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust Render's proxy
+app.set('trust proxy', 1);
+
 // Rate limiter configuration for general API endpoints
 const apiLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour window
