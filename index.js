@@ -957,11 +957,34 @@ app.use('/mcp', mcpRoutes);
 app.post('/analyze-repo', async (req, res) => {
     try {
         const { owner, repo, prompt } = req.body;
-        const analysis = await analyzeGitHubRepository(owner, repo);
-        res.json({ analysis: analysis.repositoryAnalysis });
+        
+        if (!process.env.OPENROUTER_API_KEY) {
+            throw new Error('OpenRouter API key not configured');
+        }
+
+        if (!owner || !repo) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters: owner and repo' 
+            });
+        }
+
+        const analysis = await analyzeGitHubRepository(owner, repo, prompt);
+        
+        if (!analysis) {
+            throw new Error('Analysis failed to return results');
+        }
+
+        res.json({ 
+            status: 'success',
+            analysis: analysis.repositoryAnalysis 
+        });
     } catch (error) {
         console.error('Analysis error:', error);
-        res.status(500).json({ error: 'Analysis failed' });
+        res.status(500).json({ 
+            status: 'error',
+            error: error.message || 'Analysis failed',
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
     }
 });
 
