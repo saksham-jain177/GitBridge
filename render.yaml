@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: gitbridge
+    env: node
+    buildCommand: npm install
+    startCommand: node index.js
+    envVars:
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: PORT
+        value: 10000
