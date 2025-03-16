@@ -12,6 +12,9 @@ app.use(express.json());
 
 // Root route
 app.get('/', (req, res) => {
+  // Get the current server URL
+  const serverUrl = process.env.RENDER_EXTERNAL_URL || `http://localhost:${PORT}`;
+  
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -159,16 +162,18 @@ app.get('/', (req, res) => {
                     - Run: node openrouter-integration.js
                     
                     2. Direct API Calls:
-                    - Make POST requests to /mcp endpoint
+                    - Make POST requests to ${serverUrl}/mcp endpoint
                     - Include action_id and parameters
                     
                     3. Example AI Prompt:
-                    "Analyze the GitHub repository microsoft/vscode using the MCP server at ${your-render-url}/mcp"
+                    "Analyze the GitHub repository microsoft/vscode using the MCP server at ${serverUrl}/mcp"
                 </div>
             </div>
         </div>
 
         <script>
+        const SERVER_URL = '${serverUrl}';
+        
         async function testAPI() {
             const action = document.getElementById('action').value;
             const repo = document.getElementById('repo').value;
