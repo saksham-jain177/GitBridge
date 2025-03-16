@@ -40,7 +40,7 @@ The live demo allows you to:
 1. Clone the repository:
 
     ```bash
-    git clone <your-repo-url>cd github-analyzer-mcp
+    git clone https://github.com/saksham-jain177/GitBridge
     ```
 
 2. Install dependencies:
