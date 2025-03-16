@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
         <style>
             body {
                 font-family: Arial, sans-serif;
-                max-width: 800px;
+                max-width: 1000px;
                 margin: 40px auto;
                 padding: 20px;
                 background-color: #f5f5f5;
@@ -31,9 +31,9 @@ app.get('/', (req, res) => {
                 border-radius: 10px;
                 box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            h1 {
+            h1, h2 {
                 color: #333;
-                margin-bottom: 30px;
+                margin-bottom: 20px;
             }
             .button-container {
                 display: flex;
@@ -62,6 +62,19 @@ app.get('/', (req, res) => {
             .description {
                 color: #666;
                 line-height: 1.6;
+                margin-bottom: 20px;
+            }
+            .code-block {
+                background-color: #f8f8f8;
+                padding: 15px;
+                border-radius: 5px;
+                overflow-x: auto;
+                margin: 10px 0;
+            }
+            .usage-section {
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
             }
         </style>
     </head>
@@ -80,6 +93,54 @@ app.get('/', (req, res) => {
                 <a href="/mcp">
                     <button class="button mcp-button">View MCP Endpoint</button>
                 </a>
+            </div>
+
+            <div class="usage-section">
+                <h2>How to Use This API</h2>
+                <p class="description">
+                    This API allows you to analyze GitHub repositories. Here are some example requests:
+                </p>
+
+                <h3>1. Analyze a Repository</h3>
+                <div class="code-block">
+                    POST https://gitbridge-mib3.onrender.com/mcp<br>
+                    Content-Type: application/json<br><br>
+                    {<br>
+                    &nbsp;&nbsp;"type": "analyze_repo",<br>
+                    &nbsp;&nbsp;"repo": "owner/repository",<br>
+                    &nbsp;&nbsp;"analysis_type": "full"<br>
+                    }
+                </div>
+
+                <h3>2. Get Repository Issues</h3>
+                <div class="code-block">
+                    POST https://gitbridge-mib3.onrender.com/mcp<br>
+                    Content-Type: application/json<br><br>
+                    {<br>
+                    &nbsp;&nbsp;"type": "list_issues",<br>
+                    &nbsp;&nbsp;"repo": "owner/repository",<br>
+                    &nbsp;&nbsp;"state": "open"<br>
+                    }
+                </div>
+
+                <h3>3. Check API Health</h3>
+                <div class="code-block">
+                    GET https://gitbridge-mib3.onrender.com/health
+                </div>
+
+                <h2>Integration Example</h2>
+                <div class="code-block">
+                    fetch('https://gitbridge-mib3.onrender.com/mcp', {<br>
+                    &nbsp;&nbsp;method: 'POST',<br>
+                    &nbsp;&nbsp;headers: {<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;'Content-Type': 'application/json'<br>
+                    &nbsp;&nbsp;},<br>
+                    &nbsp;&nbsp;body: JSON.stringify({<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;type: 'analyze_repo',<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;repo: 'facebook/react'<br>
+                    &nbsp;&nbsp;})<br>
+                    })
+                </div>
             </div>
         </div>
     </body>
