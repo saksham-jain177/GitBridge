@@ -5,8 +5,8 @@ const axios = require('axios');
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// MCP server URL
-const MCP_SERVER_URL = process.env.MCP_SERVER_URL || 'http://localhost:3000/mcp';
+// MCP server URL - use Render URL in production
+const MCP_SERVER_URL = process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000';
 
 // Function to call OpenRouter API
 async function callOpenRouter(prompt, actionOutput = null) {
@@ -40,32 +40,41 @@ async function callOpenRouter(prompt, actionOutput = null) {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
-          'HTTP-Referer': 'http://localhost:3000'
+          'HTTP-Referer': process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000'
         }
       }
     );
 
+    if (!response.data?.choices?.[0]?.message?.content) {
+      throw new Error('OpenRouter returned invalid response format');
+    }
+
     return response.data.choices[0].message.content;
   } catch (error) {
     console.error('Error calling OpenRouter:', error.response?.data || error.message);
-    throw error;
+    throw new Error(`OpenRouter API error: ${error.response?.data?.error || error.message}`);
   }
 }
 
 // Function to call MCP server
 async function callMCPAction(actionId, parameters) {
   try {
-    const response = await axios.post(
-      MCP_SERVER_URL,
-      {
-        action_id: actionId,
-        parameters: parameters
-      }
-    );
+    const response = await axios.post(`${MCP_SERVER_URL}/mcp`, {
+      action_id: actionId,
+      parameters: parameters
+    });
+    
+    if (!response.data) {
+      throw new Error(`MCP action ${actionId} returned no data`);
+    }
+    
     return response.data;
   } catch (error) {
-    console.error('Error calling MCP server:', error.response?.data || error.message);
-    throw error;
+    console.error(`Error calling MCP action ${actionId}:`, error.message);
+    if (error.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw new Error(`MCP action failed: ${error.message}`);
   }
 }
 
@@ -76,6 +85,10 @@ async function analyzeGitHubRepository(owner, repo, prompt = '') {
     console.log(`\nFetching details for ${owner}/${repo}...`);
     const repoDetails = await callMCPAction('get_repository', { owner, repo });
     
+    if (!repoDetails) {
+      throw new Error('Failed to fetch repository details');
+    }
+
     // Customize analysis prompt based on user input or use default
     const analysisPrompt = prompt || `Analyze this GitHub repository and provide insights about:
 1. Repository popularity (stars, forks)
@@ -84,25 +97,37 @@ async function analyzeGitHubRepository(owner, repo, prompt = '') {
 4. Key metrics and statistics`;
     
     const analysis = await callOpenRouter(analysisPrompt, repoDetails);
+    
+    if (!analysis) {
+      throw new Error('OpenRouter analysis failed to return results');
+    }
 
     // Get and analyze issues only if no specific prompt is provided
     if (!prompt) {
-      const issues = await callMCPAction('list_issues', {
-        owner,
-        repo,
-        state: 'open',
-        per_page: 5
-      });
+      try {
+        const issues = await callMCPAction('list_issues', {
+          owner,
+          repo,
+          state: 'open',
+          per_page: 5
+        });
 
-      const issuesSummary = await callOpenRouter(
-        'Summarize the key themes and patterns in these recent open issues, focusing on common problems and feature requests.',
-        issues
-      );
+        const issuesSummary = await callOpenRouter(
+          'Summarize the key themes and patterns in these recent open issues, focusing on common problems and feature requests.',
+          issues
+        );
 
-      return {
-        repositoryAnalysis: analysis,
-        issuesAnalysis: issuesSummary
-      };
+        return {
+          repositoryAnalysis: analysis,
+          issuesAnalysis: issuesSummary
+        };
+      } catch (issueError) {
+        console.warn('Issues analysis failed:', issueError);
+        // Continue with main analysis even if issues analysis fails
+        return {
+          repositoryAnalysis: analysis
+        };
+      }
     }
 
     return {
@@ -110,7 +135,7 @@ async function analyzeGitHubRepository(owner, repo, prompt = '') {
     };
   } catch (error) {
     console.error('Analysis failed:', error);
-    throw error;
+    throw new Error(error.message || 'Repository analysis failed');
   }
 }
 

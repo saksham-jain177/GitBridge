@@ -962,19 +962,27 @@ app.post('/analyze-repo', async (req, res) => {
         const { owner, repo, prompt } = req.body;
         
         if (!process.env.OPENROUTER_API_KEY) {
-            throw new Error('OpenRouter API key not configured');
+            return res.status(500).json({ 
+                status: 'error',
+                error: 'OpenRouter API key not configured'
+            });
         }
 
         if (!owner || !repo) {
             return res.status(400).json({ 
+                status: 'error',
                 error: 'Missing required parameters: owner and repo' 
             });
         }
 
+        const { analyzeGitHubRepository } = require('./openrouter-integration');
         const analysis = await analyzeGitHubRepository(owner, repo, prompt);
         
-        if (!analysis) {
-            throw new Error('Analysis failed to return results');
+        if (!analysis || !analysis.repositoryAnalysis) {
+            return res.status(500).json({ 
+                status: 'error',
+                error: 'No analysis results returned'
+            });
         }
 
         res.json({ 
@@ -986,7 +994,7 @@ app.post('/analyze-repo', async (req, res) => {
         res.status(500).json({ 
             status: 'error',
             error: error.message || 'Analysis failed',
-            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+            details: error.response?.data || error.stack
         });
     }
 });
