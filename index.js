@@ -76,6 +76,41 @@ app.get('/', (req, res) => {
                 padding-top: 20px;
                 border-top: 1px solid #eee;
             }
+            .test-section {
+                margin-top: 30px;
+                padding: 20px;
+                background-color: #f0f8ff;
+                border-radius: 5px;
+            }
+            .input-group {
+                margin-bottom: 15px;
+            }
+            .input-group label {
+                display: block;
+                margin-bottom: 5px;
+                color: #333;
+            }
+            .input-group input, .input-group select {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+            }
+            .test-button {
+                background-color: #673ab7;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            #result {
+                margin-top: 20px;
+                padding: 15px;
+                background-color: #f8f8f8;
+                border-radius: 4px;
+                white-space: pre-wrap;
+            }
         </style>
     </head>
     <body>
@@ -95,54 +130,75 @@ app.get('/', (req, res) => {
                 </a>
             </div>
 
+            <div class="test-section">
+                <h2>Interactive API Tester</h2>
+                <div class="input-group">
+                    <label for="action">Select Action:</label>
+                    <select id="action">
+                        <option value="analyze_repo">Analyze Repository</option>
+                        <option value="list_issues">List Issues</option>
+                        <option value="get_repository">Get Repository Details</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="repo">Repository (owner/name):</label>
+                    <input type="text" id="repo" placeholder="e.g., facebook/react">
+                </div>
+                <button onclick="testAPI()" class="test-button">Test API</button>
+                <div id="result"></div>
+            </div>
+
             <div class="usage-section">
-                <h2>How to Use This API</h2>
+                <h2>AI Assistant Integration Guide</h2>
                 <p class="description">
-                    This API allows you to analyze GitHub repositories. Here are some example requests:
+                    To use this server with your AI assistant (Claude, GPT, etc.):
                 </p>
-
-                <h3>1. Analyze a Repository</h3>
                 <div class="code-block">
-                    POST https://gitbridge-mib3.onrender.com/mcp<br>
-                    Content-Type: application/json<br><br>
-                    {<br>
-                    &nbsp;&nbsp;"type": "analyze_repo",<br>
-                    &nbsp;&nbsp;"repo": "owner/repository",<br>
-                    &nbsp;&nbsp;"analysis_type": "full"<br>
-                    }
-                </div>
-
-                <h3>2. Get Repository Issues</h3>
-                <div class="code-block">
-                    POST https://gitbridge-mib3.onrender.com/mcp<br>
-                    Content-Type: application/json<br><br>
-                    {<br>
-                    &nbsp;&nbsp;"type": "list_issues",<br>
-                    &nbsp;&nbsp;"repo": "owner/repository",<br>
-                    &nbsp;&nbsp;"state": "open"<br>
-                    }
-                </div>
-
-                <h3>3. Check API Health</h3>
-                <div class="code-block">
-                    GET https://gitbridge-mib3.onrender.com/health
-                </div>
-
-                <h2>Integration Example</h2>
-                <div class="code-block">
-                    fetch('https://gitbridge-mib3.onrender.com/mcp', {<br>
-                    &nbsp;&nbsp;method: 'POST',<br>
-                    &nbsp;&nbsp;headers: {<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;'Content-Type': 'application/json'<br>
-                    &nbsp;&nbsp;},<br>
-                    &nbsp;&nbsp;body: JSON.stringify({<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;type: 'analyze_repo',<br>
-                    &nbsp;&nbsp;&nbsp;&nbsp;repo: 'facebook/react'<br>
-                    &nbsp;&nbsp;})<br>
-                    })
+                    1. Use OpenRouter Integration:
+                    - Set up environment variables (OPENROUTER_API_KEY)
+                    - Run: node openrouter-integration.js
+                    
+                    2. Direct API Calls:
+                    - Make POST requests to /mcp endpoint
+                    - Include action_id and parameters
+                    
+                    3. Example AI Prompt:
+                    "Analyze the GitHub repository microsoft/vscode using the MCP server at ${your-render-url}/mcp"
                 </div>
             </div>
         </div>
+
+        <script>
+        async function testAPI() {
+            const action = document.getElementById('action').value;
+            const repo = document.getElementById('repo').value;
+            const [owner, repoName] = repo.split('/');
+            
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/mcp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action_id: action,
+                        parameters: {
+                            owner: owner,
+                            repo: repoName
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                resultDiv.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                resultDiv.textContent = 'Error: ' + error.message;
+            }
+        }
+        </script>
     </body>
     </html>
   `);
