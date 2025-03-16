@@ -10,6 +10,17 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({
+    message: "GitHub Repository Analyzer MCP Server",
+    endpoints: {
+      "/health": "Health check endpoint",
+      "/mcp": "MCP protocol endpoint"
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
