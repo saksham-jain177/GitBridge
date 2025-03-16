@@ -70,47 +70,43 @@ async function callMCPAction(actionId, parameters) {
 }
 
 // Main function to analyze a GitHub repository
-async function analyzeGitHubRepository(owner, repo) {
+async function analyzeGitHubRepository(owner, repo, prompt = '') {
   try {
-    // 1. Get repository details
+    // Get repository details
     console.log(`\nFetching details for ${owner}/${repo}...`);
-    const repoDetails = await callMCPAction('get_repository', {
-      owner: owner,
-      repo: repo
-    });
+    const repoDetails = await callMCPAction('get_repository', { owner, repo });
     
-    // 2. Ask AI to analyze the repository
-    const analysisPrompt = `Please analyze this GitHub repository and provide key insights about:
-    1. Repository popularity (stars, forks)
-    2. Development activity (open issues, last update)
-    3. Technical stack (main language, topics)
-    4. Key metrics and statistics
-    Please format the response in a clear, structured way.`;
+    // Customize analysis prompt based on user input or use default
+    const analysisPrompt = prompt || `Analyze this GitHub repository and provide insights about:
+1. Repository popularity (stars, forks)
+2. Development activity (open issues, last update)
+3. Technical stack (main language, topics)
+4. Key metrics and statistics`;
     
     const analysis = await callOpenRouter(analysisPrompt, repoDetails);
-    console.log('\nAI Analysis of Repository:');
-    console.log(analysis);
 
-    // 3. Get open issues
-    console.log('\nFetching recent issues...');
-    const issues = await callMCPAction('list_issues', {
-      owner: owner,
-      repo: repo,
-      state: 'open',
-      per_page: 5
-    });
+    // Get and analyze issues only if no specific prompt is provided
+    if (!prompt) {
+      const issues = await callMCPAction('list_issues', {
+        owner,
+        repo,
+        state: 'open',
+        per_page: 5
+      });
 
-    // 4. Ask AI to summarize issues
-    const issuesPrompt = `Please summarize the key themes and patterns in these recent open issues. 
-    Focus on identifying common problems, feature requests, or bugs that users are reporting.`;
-    
-    const issuesSummary = await callOpenRouter(issuesPrompt, issues);
-    console.log('\nAI Summary of Recent Issues:');
-    console.log(issuesSummary);
+      const issuesSummary = await callOpenRouter(
+        'Summarize the key themes and patterns in these recent open issues, focusing on common problems and feature requests.',
+        issues
+      );
+
+      return {
+        repositoryAnalysis: analysis,
+        issuesAnalysis: issuesSummary
+      };
+    }
 
     return {
-      repositoryAnalysis: analysis,
-      issuesAnalysis: issuesSummary
+      repositoryAnalysis: analysis
     };
   } catch (error) {
     console.error('Analysis failed:', error);
