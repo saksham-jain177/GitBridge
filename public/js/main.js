@@ -35,40 +35,38 @@ function switchMode() {
 async function analyzeWithAI() {
     const resultDiv = document.getElementById('result');
     const repoPath = document.getElementById('repoInput').value;
-    const prompt = document.getElementById('promptInput').value;
-    
-    resultDiv.textContent = 'Analyzing...';
     
     try {
-        // Rate limiting check
-        if (!checkRateLimit()) {
-            resultDiv.textContent = 'Rate limit exceeded. Please try again later.';
-            return;
-        }
-
+        resultDiv.textContent = 'Analyzing...';
+        
+        // Validate repo format
         const [owner, repo] = repoPath.split('/');
         if (!owner || !repo) {
-            resultDiv.textContent = 'Invalid repository format. Use format: owner/repo';
-            return;
+            throw new Error('Invalid repository format. Use format: owner/repo');
         }
 
         const response = await fetch('/analyze-repo', {
-            method: 'POST',
+            method: 'POST',  // Ensure this is POST
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ owner, repo, prompt })
+            body: JSON.stringify({ 
+                owner, 
+                repo,
+                prompt: document.getElementById('promptInput')?.value || ''
+            })
         });
 
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(errorText || response.statusText);
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Analysis failed');
         }
 
         const data = await response.json();
-        resultDiv.textContent = JSON.stringify(data, null, 2);
+        resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
     } catch (error) {
         resultDiv.textContent = `Error: ${error.message}`;
+        console.error('Analysis error:', error);
     }
 }
 
