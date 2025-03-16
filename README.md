@@ -7,6 +7,7 @@ A Model Context Protocol (MCP) server that enables AI assistants to analyze GitH
 🚀 Try it out: [GitBridge Live Demo](https://gitbridge-mib3.onrender.com/)
 
 The live demo allows you to:
+
 - Test repository analysis with AI integration
 - Explore GitHub repository data through the MCP interface
 - Try different analysis parameters and queries
