@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/saksham-jain177-gitbridge-badge.png)](https://mseep.ai/app/saksham-jain177-gitbridge)
+
 # GitHub Repository Analyzer MCP Server
 
 A Model Context Protocol (MCP) server that enables AI assistants to analyze GitHub repositories. This server provides structured access to GitHub repository data, issues, and pull requests, allowing AI models to perform detailed analysis of software projects.
