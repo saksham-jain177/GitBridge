@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cursor MCP Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        input, select {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            width: 100%;
+        }
+        .response-container {
+            margin-top: 20px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            margin-right: 5px;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 1px solid white;
+            margin-bottom: -1px;
+        }
+        .tab-content {
+            display: none;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 0 4px 4px 4px;
+            background-color: white;
+        }
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Cursor MCP Integration Test</h1>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="get-test">GET Test</div>
+        <div class="tab" data-tab="discover-test">rpc.discover Test</div>
+        <div class="tab" data-tab="sse-test">SSE Test</div>
+        <div class="tab" data-tab="tool-test">Tool Test</div>
+    </div>
+    
+    <div class="tab-content active" id="get-test">
+        <div class="container">
+            <h2>Test GET Endpoint</h2>
+            <p>Tests the basic GET endpoint that Cursor IDE uses to check server availability.</p>
+            <div>
+                <label for="get-url">MCP URL:</label>
+                <input type="text" id="get-url" value="http://localhost:10001/mcp">
+            </div>
+            <button id="test-get">Test GET Endpoint</button>
+            <div class="response-container">
+                <h3>Response:</h3>
+                <pre id="get-response">Click "Test GET Endpoint" to see the response</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="discover-test">
+        <div class="container">
+            <h2>Test rpc.discover Method</h2>
+            <p>Tests the rpc.discover method that Cursor IDE uses to discover available tools.</p>
+            <div>
+                <label for="discover-url">MCP URL:</label>
+                <input type="text" id="discover-url" value="http://localhost:10001/mcp">
+            </div>
+            <button id="test-discover">Test rpc.discover</button>
+            <div class="response-container">
+                <h3>Response:</h3>
+                <pre id="discover-response">Click "Test rpc.discover" to see the response</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="sse-test">
+        <div class="container">
+            <h2>Test SSE Connection</h2>
+            <p>Tests the Server-Sent Events (SSE) connection that Cursor IDE uses for real-time updates.</p>
+            <div>
+                <label for="sse-url">MCP URL:</label>
+                <input type="text" id="sse-url" value="http://localhost:10001/mcp">
+            </div>
+            <button id="connect-sse">Connect SSE</button>
+            <button id="disconnect-sse" disabled>Disconnect</button>
+            <div class="response-container">
+                <h3>Events:</h3>
+                <pre id="sse-events">Click "Connect SSE" to start receiving events</pre>
+            </div>
+        </div>
+    </div>
+    
+    <div class="tab-content" id="tool-test">
+        <div class="container">
+            <h2>Test MCP Tools</h2>
+            <p>Tests the actual tools provided by the MCP server.</p>
+            <div>
+                <label for="tool-url">MCP URL:</label>
+                <input type="text" id="tool-url" value="http://localhost:10001/mcp">
+            </div>
+            <div>
+                <label for="tool-select">Select Tool:</label>
+                <select id="tool-select">
+                    <option value="search_repositories">search_repositories</option>
+                    <option value="get_repository">get_repository</option>
+                    <option value="get_readme">get_readme</option>
+                </select>
+            </div>
+            <div id="tool-params-container">
+                <!-- Parameters will be dynamically added here -->
+            </div>
+            <button id="execute-tool">Execute Tool</button>
+            <div class="response-container">
+                <h3>Response:</h3>
+                <pre id="tool-response">Select a tool and click "Execute Tool" to see the response</pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // GET Test
+        document.getElementById('test-get').addEventListener('click', async () => {
+            const url = document.getElementById('get-url').value;
+            const responseElement = document.getElementById('get-response');
+            
+            responseElement.textContent = 'Sending request...';
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                responseElement.textContent = JSON.stringify(data, null, 2);
+                responseElement.classList.add('success');
+            } catch (error) {
+                responseElement.textContent = `Error: ${error.message}`;
+                responseElement.classList.add('error');
+            }
+        });
+
+        // rpc.discover Test
+        document.getElementById('test-discover').addEventListener('click', async () => {
+            const url = document.getElementById('discover-url').value;
+            const responseElement = document.getElementById('discover-response');
+            
+            responseElement.textContent = 'Sending request...';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 'test-discover',
+                        method: 'rpc.discover'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                responseElement.textContent = JSON.stringify(data, null, 2);
+                responseElement.classList.add('success');
+                
+                // Update tool select options
+                if (data.result && data.result.tools) {
+                    const toolSelect = document.getElementById('tool-select');
+                    toolSelect.innerHTML = '';
+                    
+                    data.result.tools.forEach(tool => {
+                        const option = document.createElement('option');
+                        option.value = tool.name;
+                        option.textContent = tool.name;
+                        toolSelect.appendChild(option);
+                    });
+                    
+                    // Trigger change to update parameters
+                    toolSelect.dispatchEvent(new Event('change'));
+                }
+            } catch (error) {
+                responseElement.textContent = `Error: ${error.message}`;
+                responseElement.classList.add('error');
+            }
+        });
+
+        // SSE Test
+        let eventSource = null;
+        
+        document.getElementById('connect-sse').addEventListener('click', () => {
+            const url = document.getElementById('sse-url').value;
+            const eventsElement = document.getElementById('sse-events');
+            
+            eventsElement.textContent = 'Connecting to SSE...';
+            
+            try {
+                // Close existing connection if any
+                if (eventSource) {
+                    eventSource.close();
+                }
+                
+                // Create new EventSource
+                eventSource = new EventSource(url);
+                
+                // Update button states
+                document.getElementById('connect-sse').disabled = true;
+                document.getElementById('disconnect-sse').disabled = false;
+                
+                eventSource.onopen = () => {
+                    eventsElement.textContent = 'Connection opened\n';
+                };
+                
+                eventSource.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        eventsElement.textContent += `Received: ${JSON.stringify(data)}\n`;
+                    } catch (e) {
+                        eventsElement.textContent += `Received (raw): ${event.data}\n`;
+                    }
+                };
+                
+                eventSource.onerror = (error) => {
+                    eventsElement.textContent += `Error: ${JSON.stringify(error)}\n`;
+                };
+            } catch (error) {
+                eventsElement.textContent = `Error: ${error.message}`;
+            }
+        });
+        
+        document.getElementById('disconnect-sse').addEventListener('click', () => {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                
+                document.getElementById('sse-events').textContent += 'Disconnected from SSE\n';
+                document.getElementById('connect-sse').disabled = false;
+                document.getElementById('disconnect-sse').disabled = true;
+            }
+        });
+
+        // Tool Test
+        document.getElementById('tool-select').addEventListener('change', async () => {
+            const toolName = document.getElementById('tool-select').value;
+            const paramsContainer = document.getElementById('tool-params-container');
+            
+            // Clear existing parameters
+            paramsContainer.innerHTML = '';
+            
+            try {
+                // Get tool definition
+                const url = document.getElementById('tool-url').value;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 'get-tool-def',
+                        method: 'rpc.discover'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.result && data.result.tools) {
+                    const tool = data.result.tools.find(t => t.name === toolName);
+                    
+                    if (tool && tool.parameters && tool.parameters.properties) {
+                        const properties = tool.parameters.properties;
+                        const required = tool.parameters.required || [];
+                        
+                        // Create input fields for each parameter
+                        Object.keys(properties).forEach(paramName => {
+                            const param = properties[paramName];
+                            const isRequired = required.includes(paramName);
+                            
+                            const div = document.createElement('div');
+                            
+                            const label = document.createElement('label');
+                            label.setAttribute('for', `param-${paramName}`);
+                            label.textContent = `${paramName}${isRequired ? ' *' : ''}:`;
+                            
+                            const input = document.createElement('input');
+                            input.setAttribute('type', 'text');
+                            input.setAttribute('id', `param-${paramName}`);
+                            input.setAttribute('name', paramName);
+                            input.setAttribute('data-required', isRequired);
+                            
+                            if (param.enum) {
+                                // Create a select for enum values
+                                const select = document.createElement('select');
+                                select.setAttribute('id', `param-${paramName}`);
+                                select.setAttribute('name', paramName);
+                                select.setAttribute('data-required', isRequired);
+                                
+                                param.enum.forEach(value => {
+                                    const option = document.createElement('option');
+                                    option.value = value;
+                                    option.textContent = value;
+                                    select.appendChild(option);
+                                });
+                                
+                                div.appendChild(label);
+                                div.appendChild(select);
+                            } else {
+                                div.appendChild(label);
+                                div.appendChild(input);
+                            }
+                            
+                            paramsContainer.appendChild(div);
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching tool definition:', error);
+            }
+        });
+        
+        document.getElementById('execute-tool').addEventListener('click', async () => {
+            const url = document.getElementById('tool-url').value;
+            const toolName = document.getElementById('tool-select').value;
+            const responseElement = document.getElementById('tool-response');
+            
+            responseElement.textContent = 'Executing tool...';
+            
+            try {
+                // Collect parameters
+                const params = {};
+                const paramInputs = document.querySelectorAll('#tool-params-container input, #tool-params-container select');
+                
+                paramInputs.forEach(input => {
+                    if (input.value) {
+                        params[input.name] = input.value;
+                    } else if (input.dataset.required === 'true') {
+                        throw new Error(`Parameter ${input.name} is required`);
+                    }
+                });
+                
+                // Execute tool
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        id: 'execute-tool',
+                        method: toolName,
+                        params: params
+                    })
+                });
+                
+                const data = await response.json();
+                
+                responseElement.textContent = JSON.stringify(data, null, 2);
+                responseElement.classList.add(data.error ? 'error' : 'success');
+            } catch (error) {
+                responseElement.textContent = `Error: ${error.message}`;
+                responseElement.classList.add('error');
+            }
+        });
+
+        // Initialize tool parameters
+        document.getElementById('tool-select').dispatchEvent(new Event('change'));
+    </script>
+</body>
+</html>

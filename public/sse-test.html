@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSE Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 200px;
+            background-color: #f9f9f9;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>SSE Test</h1>
+    <div>
+        <button id="connect-mcp">Connect to MCP Endpoint</button>
+        <button id="connect-mcp-sse">Connect to MCP-SSE Endpoint</button>
+        <button id="connect-test">Connect to Test Endpoint</button>
+        <button id="disconnect" disabled>Disconnect</button>
+    </div>
+    <div id="output">Connection status will appear here...</div>
+
+    <script>
+        let eventSource = null;
+
+        document.getElementById('connect-mcp').addEventListener('click', function() {
+            connectSSE('/mcp');
+        });
+
+        document.getElementById('connect-mcp-sse').addEventListener('click', function() {
+            connectSSE('/mcp-sse');
+        });
+
+        document.getElementById('connect-test').addEventListener('click', function() {
+            connectSSE('/sse-test');
+        });
+
+        document.getElementById('disconnect').addEventListener('click', function() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                addMessage('Disconnected from SSE', 'status');
+                document.getElementById('disconnect').disabled = true;
+                document.getElementById('connect-mcp').disabled = false;
+                document.getElementById('connect-test').disabled = false;
+            }
+        });
+
+        function connectSSE(endpoint) {
+            const output = document.getElementById('output');
+            output.innerHTML = '';
+            addMessage('Connecting to ' + endpoint + '...', 'status');
+
+            // Close existing connection if any
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            // Create new EventSource
+            eventSource = new EventSource('http://localhost:10001' + endpoint);
+
+            // Update button states
+            document.getElementById('disconnect').disabled = false;
+            document.getElementById('connect-mcp').disabled = true;
+            document.getElementById('connect-mcp-sse').disabled = true;
+            document.getElementById('connect-test').disabled = true;
+
+            eventSource.onopen = function() {
+                addMessage('Connection opened', 'status');
+            };
+
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    addMessage('Message received: ' + JSON.stringify(data, null, 2), 'message');
+                } catch (e) {
+                    addMessage('Message received (raw): ' + event.data, 'message');
+                }
+            };
+
+            eventSource.onerror = function(error) {
+                addMessage('Error: ' + JSON.stringify(error), 'error');
+                eventSource.close();
+                eventSource = null;
+                document.getElementById('disconnect').disabled = true;
+                document.getElementById('connect-mcp').disabled = false;
+                document.getElementById('connect-mcp-sse').disabled = false;
+                document.getElementById('connect-test').disabled = false;
+            };
+        }
+
+        function addMessage(message, type) {
+            const output = document.getElementById('output');
+            const messageElement = document.createElement('div');
+            messageElement.className = 'message ' + (type || '');
+            messageElement.textContent = message;
+            output.appendChild(messageElement);
+
+            // Scroll to bottom
+            output.scrollTop = output.scrollHeight;
+        }
+    </script>
+</body>
+</html>

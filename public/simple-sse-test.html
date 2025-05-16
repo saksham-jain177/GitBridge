@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple SSE Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-height: 200px;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple SSE Test</h1>
+    <button id="connect">Connect to SSE</button>
+    <button id="disconnect" disabled>Disconnect</button>
+    <div id="output">Click "Connect to SSE" to start</div>
+
+    <script>
+        let eventSource = null;
+        
+        document.getElementById('connect').addEventListener('click', function() {
+            const output = document.getElementById('output');
+            output.innerHTML = 'Connecting...';
+            
+            // Create new EventSource
+            eventSource = new EventSource('http://localhost:3000/sse');
+            
+            // Update button states
+            document.getElementById('disconnect').disabled = false;
+            document.getElementById('connect').disabled = true;
+            
+            eventSource.onopen = function() {
+                output.innerHTML += '<p>Connection opened</p>';
+            };
+            
+            eventSource.onmessage = function(event) {
+                try {
+                    const data = JSON.parse(event.data);
+                    output.innerHTML += '<p>Message received: ' + JSON.stringify(data, null, 2) + '</p>';
+                } catch (e) {
+                    output.innerHTML += '<p>Message received (raw): ' + event.data + '</p>';
+                }
+            };
+            
+            eventSource.onerror = function(error) {
+                output.innerHTML += '<p>Error: ' + JSON.stringify(error) + '</p>';
+                eventSource.close();
+                eventSource = null;
+                document.getElementById('disconnect').disabled = true;
+                document.getElementById('connect').disabled = false;
+            };
+        });
+        
+        document.getElementById('disconnect').addEventListener('click', function() {
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+                document.getElementById('output').innerHTML += '<p>Disconnected from SSE</p>';
+                document.getElementById('disconnect').disabled = true;
+                document.getElementById('connect').disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

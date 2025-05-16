@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MCP Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>MCP Test</h1>
+
+    <div>
+        <h2>Test MCP Endpoint</h2>
+        <div>
+            <label for="method">Method:</label>
+            <input type="text" id="method" value="rpc.discover">
+        </div>
+        <div>
+            <label for="params">Params (JSON):</label>
+            <textarea id="params" rows="5">{}</textarea>
+        </div>
+        <button id="test-mcp">Test MCP</button>
+        <div>
+            <h3>Response:</h3>
+            <pre id="response"></pre>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('test-mcp').addEventListener('click', async function() {
+            const method = document.getElementById('method').value;
+            const paramsStr = document.getElementById('params').value;
+            let params;
+
+            try {
+                params = JSON.parse(paramsStr);
+            } catch (e) {
+                document.getElementById('response').textContent = 'Invalid JSON params: ' + e.message;
+                return;
+            }
+
+            const requestBody = {
+                jsonrpc: '2.0',
+                method: method,
+                params: params,
+                id: 'test-' + Date.now()
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/mcp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                const data = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        });
+    </script>
+</body>
+</html>

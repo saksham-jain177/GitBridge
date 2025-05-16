@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node -r dotenv/config index.js",
     "dev": "nodemon -r dotenv/config index.js --ignore claude_desktop_config.json",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:mcp": "node -r dotenv/config test-mcp-connection.js",
+    "test:simple": "node -r dotenv/config simple-test.js"
   },
   "keywords": [
     "mcp",
@@ -26,6 +28,7 @@
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {
+    "eventsource": "^4.0.0",
     "nodemon": "^3.1.10"
   }
 }

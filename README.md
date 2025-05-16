@@ -1,8 +1,6 @@
-[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/saksham-jain177-gitbridge-badge.png)](https://mseep.ai/app/saksham-jain177-gitbridge)
-
 # GitHub Repository Analyzer MCP Server
 
-A Model Context Protocol (MCP) server that enables AI assistants to analyze GitHub repositories. This server provides structured access to GitHub repository data, issues, and pull requests, allowing AI models to perform detailed analysis of software projects.
+A Model Context Protocol (MCP) server that enables AI assistants to analyze GitHub repositories. This server provides structured access to GitHub repository data, allowing AI models to perform detailed analysis of software projects.
 
 ## Live Demo
 
@@ -10,18 +8,17 @@ A Model Context Protocol (MCP) server that enables AI assistants to analyze GitH
 
 The live demo allows you to:
 
-- Test repository analysis with AI integration
 - Explore GitHub repository data through the MCP interface
-- Try different analysis parameters and queries
+- Test repository analysis capabilities
+- Try different query parameters
 
 ## Features
 
 - **Repository Analysis**: Fetch detailed information about any public GitHub repository
-- **Issue Tracking**: Access and analyze repository issues
-- **Pull Request Analysis**: Review pull request data and statistics
 - **Search Capabilities**: Search across GitHub repositories
-- **AI Integration**: Ready for integration with AI assistants (Claude, GPT, etc.)
-  
+- **README Access**: Retrieve repository README content
+- **AI Integration**: Ready for integration with AI assistants via MCP
+
 ## Architecture
 
 ```text
@@ -35,9 +32,9 @@ The live demo allows you to:
 ## Prerequisites
 
 - Node.js (v14 or higher)
-- npm (Node Package Manager)- GitHub Personal Access Token
-- OpenRouter API Key (for testing)
-  
+- npm (Node Package Manager)
+- GitHub Personal Access Token
+
 ## Installation
 
 1. Clone the repository:
@@ -56,8 +53,7 @@ The live demo allows you to:
 
     ```bash
     GITHUB_TOKEN=your_github_personal_access_token
-    OPENROUTER_API_KEY=your_openrouter_api_key
-    PORT=3000
+    PORT=10000
     ```
 
 ## Usage
@@ -68,64 +64,137 @@ The live demo allows you to:
     npm start
     ```
 
-2. The server will be running at `http://localhost:3000`
+2. For development with auto-restart on file changes:
 
-### Testing with OpenRouter Integration
+    ```bash
+    npm run dev
+    ```
 
-Run the test script:
-
-```bash
-node openrouter-integration.js
-```
+3. The server will be running at `http://localhost:10000`
 
 ### Available Endpoints
 
-- `GET /mcp`: Get server metadata and available actions
-- `POST /mcp`: Execute actions with parameters
+- `GET /mcp`: Get server metadata and available tools
+- `POST /mcp`: Execute tools with parameters
 
-### Available Actions
+### Available Tools
 
 1. **search_repositories**
-   - Search GitHub repositories   - Parameters: query, sort, order, per_page
+   - Search GitHub repositories
+   - Parameters: query, sort, order
+
 2. **get_repository**
-   - Get detailed repository information   - Parameters: owner, repo
-3. **list_issues**
-   - List repository issues   - Parameters: owner, repo, state, per_page
-4. **create_issue**
-   - Create a new issue   - Parameters: owner, repo, title, body, labels
-5. **list_pull_requests**
-   - List repository pull requests
-   - Parameters: owner, repo, state, per_page
-  
+   - Get detailed repository information
+   - Parameters: owner, repo
+
+3. **get_readme**
+   - Get repository README content
+   - Parameters: owner, repo
+
 ## Integration with AI Assistants
 
-This MCP server is designed to work with AI assistants through the Model Context Protocol. When integrated with Claude or similar AI assistants, it enables:
+This MCP server is designed to work with AI assistants through the Model Context Protocol. When integrated with Claude, Cursor IDE, or similar AI assistants, it enables:
 
 1. Dynamic repository analysis based on user input
-2. Customized analysis focus areas3. Real-time data fetching and processing
+2. Real-time data fetching from GitHub
 3. Structured response generation
+
+### Cursor IDE Integration
+
+To integrate GitBridge with Cursor IDE:
+
+1. Open Cursor IDE settings
+2. Navigate to the AI settings section
+3. Add a new MCP provider with the following configuration:
+
+```json
+{
+  "name": "GitBridge",
+  "endpoint": "https://gitbridge-mib3.onrender.com/mcp"
+}
+```
+
+1. Save the settings and restart Cursor IDE
+1. You can now ask Cursor about GitHub repositories
+
+### Claude Desktop Integration
+
+To integrate GitBridge with Claude Desktop:
+
+1. Create a file named `gitbridge-mcp.json` with the following content:
+
+```json
+{
+  "mcp": {
+    "endpoint": "https://gitbridge-mib3.onrender.com/mcp"
+  }
+}
+```
+
+1. Import this configuration in Claude Desktop
+1. You can now ask Claude about GitHub repositories
 
 ## Example Interaction
 
 ```text
-textUser: Analyze the repository microsoft/vscode
-Assistant: I'll analyze the VS Code repository for you.[Fetches data through MCP server]
+User: Tell me about the microsoft/vscode repository
+Assistant: The microsoft/vscode repository is the official repository for Visual Studio Code, a popular open-source code editor developed by Microsoft.
 
-Here's the analysis:- Repository Stats: XX stars, XX forks
-- Recent Activity: XX open issues, last updated XX- Technical Stack: Primary language, main dependencies
-- Key Insights: [Generated from data]
+Repository details:
+- Description: Visual Studio Code
+- Stars: 150K+
+- Language: TypeScript
+- Created: September 2015
+- Last updated: [recent date]
+```
+
+## JSON-RPC 2.0 Implementation
+
+This server implements the JSON-RPC 2.0 specification for all communications:
+
+### Request Format
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "request_id",
+  "method": "get_repository",
+  "params": {
+    "owner": "microsoft",
+    "repo": "vscode"
+  }
+}
+```
+
+### Response Format
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": "request_id",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Repository data in JSON format"
+      }
+    ]
+  }
+}
 ```
 
 ## Development
 
 To modify or extend the server:
 
-1. Add new actions in `routes/mcp.js`
+1. Add new tools in `routes/mcp.js`
 2. Implement corresponding services in `services/github.js`
 3. Update the metadata schema as needed
 
 ## Contributing
 
 1. Fork the repository
-2. Create your feature branch. Commit your changes
-3. Push to the branch5. Create a Pull Request
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request

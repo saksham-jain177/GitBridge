@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "gitbridge-mcp": {
+      "url": "https://gitbridge-mib3.onrender.com/mcp"
+    }
+  }
+}

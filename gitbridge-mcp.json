@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "gitbridge-mcp": {
+      "url": "http://localhost:10001/mcp"
+    }
+  }
+}

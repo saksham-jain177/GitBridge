@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Server Health Status</title>
+    <link rel="stylesheet" href="/styles/main.css">
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <div class="container">
+        <div class="header">
+            <h1>Server Health Status</h1>
+            <div class="status-badge">Status: {{status}}</div>
+        </div>
+
+        <div class="health-grid">
+            {{#each metricGroups}}
+            <div class="metric-group">
+                <div class="metric-title">{{title}}</div>
+                {{#each metrics}}
+                <div class="metric">
+                    <span>{{label}}</span>
+                    <span>{{value}}</span>
+                </div>
+                {{/each}}
+            </div>
+            {{/each}}
+        </div>
+
+        <div class="button-group">
+            <button class="back-button" onclick="window.location.href='/'">
+                ←
+            </button>
+            <button class="health-refresh-button" onclick="location.reload()">
+                Refresh Status
+            </button>
+        </div>
+    </div>
+
+    <script src="/js/health-status.js"></script>
+</body>
+</html>
